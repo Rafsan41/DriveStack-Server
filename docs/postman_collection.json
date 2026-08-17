@@ -1,0 +1,354 @@
+{
+  "info": {
+    "name": "Vehicle Rental Management API",
+    "description": "M360ICT technical assessment. Run 'Auth / Login' first — it stores the JWT in the {{token}} collection variable, so every other request is authenticated automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "lastRentalId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "auth": { "type": "noauth" },
+        "url": { "raw": "{{baseUrl}}/health", "host": ["{{baseUrl}}"], "path": ["health"] }
+      }
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('login succeeded', () => pm.response.to.have.status(200));",
+                  "if (body.success && body.data && body.data.token) {",
+                  "  pm.collectionVariables.set('token', body.data.token);",
+                  "  console.log('JWT stored in {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rental.test\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login — wrong password (401)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rental.test\",\n  \"password\": \"wrong-password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "item": [
+        {
+          "name": "List vehicles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vehicles?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "category", "value": "suv", "disabled": true },
+                { "key": "search", "value": "toyota", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get vehicle by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create vehicle (multipart)",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "name", "value": "Toyota Premio", "type": "text" },
+                { "key": "plate_number", "value": "DHA-KA-9999", "type": "text" },
+                { "key": "category", "value": "sedan", "type": "text" },
+                { "key": "daily_rate", "value": "5200", "type": "text" },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "src": [],
+                  "description": "Optional JPEG/PNG/WebP, max 5 MB"
+                }
+              ]
+            },
+            "url": { "raw": "{{baseUrl}}/vehicles", "host": ["{{baseUrl}}"], "path": ["vehicles"] }
+          }
+        },
+        {
+          "name": "Update vehicle + replace photo",
+          "request": {
+            "method": "PUT",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "daily_rate", "value": "4800", "type": "text" },
+                { "key": "photo", "type": "file", "src": [] },
+                { "key": "remove_photo", "value": "true", "type": "text", "disabled": true }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "1"]
+            }
+          }
+        },
+        {
+          "name": "Soft delete vehicle",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/vehicles/6",
+              "host": ["{{baseUrl}}"],
+              "path": ["vehicles", "6"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rentals",
+      "item": [
+        {
+          "name": "List rentals",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rentals?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "vehicle_id", "value": "1", "disabled": true },
+                { "key": "status", "value": "completed", "disabled": true },
+                { "key": "start_date", "value": "2025-08-01", "disabled": true },
+                { "key": "end_date", "value": "2025-08-31", "disabled": true },
+                { "key": "search", "value": "Nusrat", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get rental by id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/rentals/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create rental",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "pm.test('created', () => pm.response.to.have.status(201));",
+                  "if (body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('lastRentalId', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 3,\n  \"customer_name\": \"Arif Chowdhury\",\n  \"customer_phone\": \"+8801711223344\",\n  \"start_date\": \"2025-10-10\",\n  \"end_date\": \"2025-10-12\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/rentals", "host": ["{{baseUrl}}"], "path": ["rentals"] }
+          }
+        },
+        {
+          "name": "Create rental — overlapping (expect 409)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('rejected as a conflict', () => pm.response.to.have.status(409));",
+                  "pm.test('names the conflicting rental', () => {",
+                  "  pm.expect(pm.response.json().details).to.have.property('conflicting_rental');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 3,\n  \"customer_name\": \"Second Customer\",\n  \"customer_phone\": \"+8801711223355\",\n  \"start_date\": \"2025-10-11\",\n  \"end_date\": \"2025-10-14\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/rentals", "host": ["{{baseUrl}}"], "path": ["rentals"] }
+          }
+        },
+        {
+          "name": "Create rental — adjacent day (expect 201)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicle_id\": 3,\n  \"customer_name\": \"Adjacent Booking\",\n  \"customer_phone\": \"+8801711223366\",\n  \"start_date\": \"2025-10-13\",\n  \"end_date\": \"2025-10-15\"\n}"
+            },
+            "url": { "raw": "{{baseUrl}}/rentals", "host": ["{{baseUrl}}"], "path": ["rentals"] }
+          }
+        },
+        {
+          "name": "Update rental",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"end_date\": \"2025-10-12\",\n  \"status\": \"ongoing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/rentals/{{lastRentalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "{{lastRentalId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete rental",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/rentals/{{lastRentalId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["rentals", "{{lastRentalId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Monthly report — August 2025",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const report = pm.response.json().data;",
+                  "pm.test('vehicle 1 is credited only its August days', () => {",
+                  "  const corolla = report.vehicles.find((v) => v.id === 1);",
+                  "  pm.expect(corolla.days_rented).to.eql(3);",
+                  "  pm.expect(Number(corolla.revenue)).to.eql(13500);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/rentals?month=2025-08",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "rentals"],
+              "query": [{ "key": "month", "value": "2025-08" }]
+            }
+          }
+        },
+        {
+          "name": "Monthly report — July 2025 (other half of the boundary rental)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/rentals?month=2025-07",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "rentals"],
+              "query": [{ "key": "month", "value": "2025-07" }]
+            }
+          }
+        },
+        {
+          "name": "Monthly report — single vehicle",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reports/rentals?month=2025-08&vehicle_id=1",
+              "host": ["{{baseUrl}}"],
+              "path": ["reports", "rentals"],
+              "query": [
+                { "key": "month", "value": "2025-08" },
+                { "key": "vehicle_id", "value": "1" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
