@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DriveStack — API Console</title>
+    <meta
+      name="description"
+      content="DriveStack — Vehicle Rental Management API: staff auth, fleet management, overlap-safe rentals and monthly reporting."
+    />
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9A%97%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <!-- ===================== TOP BAR ===================== -->
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">🚗</span>
+        <span class="brand-name">Drive<strong>Stack</strong></span>
+      </div>
+      <div class="topbar-right">
+        <span id="status-pill" class="status-pill status-pill--checking">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="status-text">checking…</span>
+        </span>
+        <a class="ghost-btn" href="/health" target="_blank" rel="noopener">/health</a>
+      </div>
+    </header>
+
+    <!-- ===================== HERO / SCENE ===================== -->
+    <section class="hero">
+      <div class="scene" role="img" aria-label="A car driving down a road at sunset">
+        <div class="sun"></div>
+        <div class="cloud cloud--1"></div>
+        <div class="cloud cloud--2"></div>
+        <div class="cloud cloud--3"></div>
+        <div class="hills hills--back"></div>
+        <div class="hills hills--front"></div>
+
+        <!-- The car: pure SVG, wheels spin + body bobs via CSS -->
+        <div class="car">
+          <div class="exhaust"></div>
+          <svg class="car-svg" viewBox="0 0 220 110" xmlns="http://www.w3.org/2000/svg">
+            <!-- body -->
+            <path
+              class="car-body"
+              d="M8 74 Q10 54 30 50 L58 50 Q74 30 104 30 L150 30 Q176 30 190 52 L206 58 Q214 60 214 70 L214 78 Q214 84 206 84 L14 84 Q8 84 8 78 Z"
+            />
+            <!-- roof glass -->
+            <path class="car-glass" d="M66 50 Q78 36 102 36 L128 36 L134 50 Z" />
+            <path class="car-glass" d="M140 36 L148 36 Q168 36 178 50 L142 50 Z" />
+            <!-- door line -->
+            <path class="car-line" d="M120 40 L120 82" />
+            <!-- headlight + tail -->
+            <circle class="car-head" cx="207" cy="66" r="4" />
+            <rect class="car-tail" x="9" y="60" width="6" height="9" rx="2" />
+            <!-- wheels -->
+            <g class="wheel wheel--rear">
+              <circle class="tire" cx="62" cy="84" r="18" />
+              <circle class="hub" cx="62" cy="84" r="8" />
+              <path class="spoke" d="M62 68 L62 100 M46 84 L78 84 M50 72 L74 96 M74 72 L50 96" />
+            </g>
+            <g class="wheel wheel--front">
+              <circle class="tire" cx="162" cy="84" r="18" />
+              <circle class="hub" cx="162" cy="84" r="8" />
+              <path
+                class="spoke"
+                d="M162 68 L162 100 M146 84 L178 84 M150 72 L174 96 M174 72 L150 96"
+              />
+            </g>
+          </svg>
+          <div class="shadow"></div>
+        </div>
+
+        <div class="road">
+          <div class="road-dashes"></div>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <p class="eyebrow">DriveStack · Node · TypeScript · Express · Knex · PostgreSQL</p>
+        <h1>Vehicle Rental Management</h1>
+        <p class="lede">
+          Staff sign in, manage the fleet, and book rentals that
+          <strong>can never be double-booked</strong> — plus a monthly report that splits every
+          rental into the right calendar month.
+        </p>
+        <div class="stat-row">
+          <div class="stat"><span class="stat-num">14</span><span class="stat-label">endpoints</span></div>
+          <div class="stat"><span class="stat-num">4</span><span class="stat-label">resources</span></div>
+          <div class="stat"><span class="stat-num">JWT</span><span class="stat-label">secured</span></div>
+          <div class="stat"><span class="stat-num">409</span><span class="stat-label">on overlap</span></div>
+        </div>
+        <a class="cta" href="#endpoints">Explore the endpoints ↓</a>
+      </div>
+    </section>
+
+    <!-- ===================== CONTROLS ===================== -->
+    <div class="controls" id="endpoints">
+      <div class="controls-inner">
+        <label class="search">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            id="search"
+            type="search"
+            placeholder="Filter endpoints — path or keyword…"
+            autocomplete="off"
+            aria-label="Filter endpoints"
+          />
+        </label>
+        <div class="filters" role="group" aria-label="Filter by method">
+          <button class="chip chip--active" data-filter="ALL">All</button>
+          <button class="chip" data-filter="GET">GET</button>
+          <button class="chip" data-filter="POST">POST</button>
+          <button class="chip" data-filter="PUT">PUT</button>
+          <button class="chip" data-filter="DELETE">DELETE</button>
+        </div>
+      </div>
+    </div>
+
+    <main class="wrap">
+      <p id="empty" class="empty" hidden>No endpoints match that filter. 🛞</p>
+
+      <!-- ===================== AUTH ===================== -->
+      <section class="group">
+        <div class="group-head">
+          <span class="group-emoji" aria-hidden="true">🔑</span>
+          <h2>Auth</h2>
+          <p>Sign in and receive a JWT. Rate-limited to slow down guessing.</p>
+        </div>
+        <div class="cards">
+          <article class="card" data-method="POST" data-path="/auth/login" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--post">POST</span>
+              <code class="path">/auth/login</code>
+              <span class="copy-hint">click to copy</span>
+            </div>
+            <p class="desc">email + password → signed JWT.</p>
+            <div class="tags">
+              <span class="tag">public</span>
+              <span class="tag tag--warn">rate-limited</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================== VEHICLES ===================== -->
+      <section class="group">
+        <div class="group-head">
+          <span class="group-emoji" aria-hidden="true">🚙</span>
+          <h2>Vehicles</h2>
+          <p>The fleet — CRUD with photo upload and soft delete.</p>
+        </div>
+        <div class="cards">
+          <article class="card" data-method="GET" data-path="/vehicles" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/vehicles</code>
+              <span class="lock" title="Requires JWT" aria-label="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">List with pagination, category filter and name search.</p>
+            <div class="tags">
+              <span class="tag">?page</span><span class="tag">?limit</span>
+              <span class="tag">?category</span><span class="tag">?search</span>
+            </div>
+          </article>
+          <article class="card" data-method="GET" data-path="/vehicles/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/vehicles/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Fetch a single vehicle. 404 if soft-deleted.</p>
+          </article>
+          <article class="card" data-method="POST" data-path="/vehicles" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--post">POST</span>
+              <code class="path">/vehicles</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Create a vehicle. multipart/form-data with a photo.</p>
+            <div class="tags">
+              <span class="tag">multipart</span><span class="tag">photo</span>
+              <span class="tag tag--warn">409 dup plate</span>
+            </div>
+          </article>
+          <article class="card" data-method="PUT" data-path="/vehicles/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--put">PUT</span>
+              <code class="path">/vehicles/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Update fields; replace or clear the photo.</p>
+          </article>
+          <article class="card" data-method="DELETE" data-path="/vehicles/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--delete">DELETE</span>
+              <code class="path">/vehicles/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Soft delete — sets deleted_at, keeps rental history.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================== RENTALS ===================== -->
+      <section class="group">
+        <div class="group-head">
+          <span class="group-emoji" aria-hidden="true">📅</span>
+          <h2>Rentals</h2>
+          <p>Bookings — server-side pricing and a race-proof overlap check.</p>
+        </div>
+        <div class="cards">
+          <article class="card" data-method="GET" data-path="/rentals" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/rentals</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">List with vehicle, status and date-range filters + search.</p>
+            <div class="tags">
+              <span class="tag">?vehicle_id</span><span class="tag">?status</span>
+              <span class="tag">?start_date</span><span class="tag">?end_date</span>
+            </div>
+          </article>
+          <article class="card" data-method="GET" data-path="/rentals/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/rentals/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Fetch one rental, joined with its vehicle.</p>
+          </article>
+          <article class="card card--hero" data-method="POST" data-path="/rentals" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--post">POST</span>
+              <code class="path">/rentals</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">
+              Book a vehicle. total_amount is computed server-side; an overlapping active rental is
+              rejected with <strong>409</strong> inside a transaction.
+            </p>
+            <div class="tags">
+              <span class="tag tag--star">overlap-safe</span>
+              <span class="tag">server-priced</span>
+            </div>
+          </article>
+          <article class="card" data-method="PUT" data-path="/rentals/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--put">PUT</span>
+              <code class="path">/rentals/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Edit a rental; date/vehicle changes re-run the overlap check.</p>
+          </article>
+          <article class="card" data-method="DELETE" data-path="/rentals/:id" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--delete">DELETE</span>
+              <code class="path">/rentals/:id</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">Remove a rental.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================== REPORTS ===================== -->
+      <section class="group">
+        <div class="group-head">
+          <span class="group-emoji" aria-hidden="true">📊</span>
+          <h2>Reports</h2>
+          <p>Monthly per-vehicle activity with correct month-boundary attribution.</p>
+        </div>
+        <div class="cards">
+          <article class="card card--hero" data-method="GET" data-path="/reports/rentals" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/reports/rentals</code>
+              <span class="lock" title="Requires JWT">🔒</span>
+            </div>
+            <p class="desc">
+              Per vehicle: bookings, days rented and revenue for a month — only the days that fall
+              inside it — plus the top earner.
+            </p>
+            <div class="tags">
+              <span class="tag tag--star">?month=YYYY-MM</span>
+              <span class="tag">?vehicle_id</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===================== UTILITY ===================== -->
+      <section class="group">
+        <div class="group-head">
+          <span class="group-emoji" aria-hidden="true">🛠️</span>
+          <h2>Utility</h2>
+          <p>Health and static assets.</p>
+        </div>
+        <div class="cards">
+          <article class="card" data-method="GET" data-path="/health" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/health</code>
+              <span class="tag">public</span>
+            </div>
+            <p class="desc">Liveness probe — status, environment, timestamp.</p>
+          </article>
+          <article class="card" data-method="GET" data-path="/uploads/:file" tabindex="0">
+            <div class="card-top">
+              <span class="badge badge--get">GET</span>
+              <code class="path">/uploads/:file</code>
+              <span class="tag">public</span>
+            </div>
+            <p class="desc">Stored vehicle photos, served statically.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span class="brand-mark" aria-hidden="true">🚗</span>
+      <p><strong>DriveStack</strong> · Vehicle Rental Management API · built with Express, Knex &amp; PostgreSQL</p>
+      <p class="footer-sub">Protected routes need <code>Authorization: Bearer &lt;token&gt;</code></p>
+    </footer>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

@@ -4,7 +4,17 @@ import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['dist/**', 'node_modules/**', 'uploads/**', 'coverage/**'],
+    // tests/ and vitest.config.ts sit outside the build tsconfig's `project`, so
+    // the type-aware lint rules can't resolve them; Vitest type-checks them at run.
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'uploads/**',
+      'coverage/**',
+      'tests/**',
+      'public/**',
+      'vitest.config.ts',
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
